@@ -23,11 +23,18 @@ jobs:
           unzip -q gradle.zip
           echo "GRADLE_HOME=$PWD/gradle-8.7" >> $GITHUB_ENV
           echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
-      - name: Compile debug
-        run: gradle :app:compileDebugKotlin --stacktrace --no-daemon 2>&1 | tee compile-log.txt
-      - name: Upload compile log
+      - name: Run unit tests
+        run: gradle :app:testDebugUnitTest --stacktrace --no-daemon
+      - name: Publish test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: compile-log
-          path: compile-log.txt
+          name: test-results
+          path: app/build/test-results/testDebugUnitTest/
+      - name: Build release APK
+        run: gradle assembleRelease --stacktrace --no-daemon
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app/build/outputs/apk/release/*.apk
