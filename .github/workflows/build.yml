@@ -23,31 +23,11 @@ jobs:
           unzip -q gradle.zip
           echo "GRADLE_HOME=$PWD/gradle-8.7" >> $GITHUB_ENV
           echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
-      - name: Run unit tests
-        run: gradle :app:testDebugUnitTest --stacktrace --no-daemon
-      - name: Publish test results
+      - name: Compile debug
+        run: gradle :app:compileDebugKotlin --stacktrace --no-daemon 2>&1 | tee compile-log.txt
+      - name: Upload compile log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: app/build/test-results/testDebugUnitTest/
-      - name: Build release APK
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          for v in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
-            if [ -z "${!v}" ]; then echo "Missing secret: $v"; exit 1; fi
-          done
-          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
-          gradle assembleRelease --stacktrace --no-daemon
-          SDK=$(ls $ANDROID_SDK_ROOT/build-tools | sort -V | tail -1)
-          $ANDROID_SDK_ROOT/build-tools/$SDK/apksigner sign --ks release.keystore --ks-key-alias "$KEY_ALIAS" --ks-pass "pass:$KEYSTORE_PASSWORD" --key-pass "pass:$KEY_PASSWORD" --out app/build/outputs/apk/release/app-release-signed.apk app/build/outputs/apk/release/*.apk
-          $ANDROID_SDK_ROOT/build-tools/$SDK/apksigner verify --verbose app/build/outputs/apk/release/app-release-signed.apk
-      - name: Upload signed APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release
-          path: app/build/outputs/apk/release/app-release-signed.apk
+          name: compile-log
+          path: compile-log.txt

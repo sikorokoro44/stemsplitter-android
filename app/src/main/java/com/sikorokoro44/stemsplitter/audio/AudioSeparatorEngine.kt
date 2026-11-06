@@ -168,7 +168,7 @@ class AudioSeparatorEngine {
             val bit = n shr 1
             while (j >= bit) {
                 j -= bit
-                bit shr= 1
+                bit = bit.shr(1)
             }
             j += bit
             if (i < j) {
@@ -192,7 +192,7 @@ class AudioSeparatorEngine {
                     w = w * wlen
                 }
             }
-            len shl= 1
+            len = len.shl(1)
         }
 
         if (inverse) {
