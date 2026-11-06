@@ -41,7 +41,7 @@ class AudioSeparatorTest {
     @Test fun testVocalInstrumentalDistinct() {
         val sampleRate = 8000
         val duration = 0.5
-        val numSamples = sampleRate * duration.toInt()
+        val numSamples = (sampleRate * duration).toInt()
         val samples = FloatArray(numSamples)
         for (i in samples.indices) {
             val t = i.toFloat() / sampleRate
