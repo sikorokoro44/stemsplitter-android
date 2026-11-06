@@ -17,12 +17,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: '8.7'
+      - name: Install Gradle
+        run: |
+          curl -sL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          echo "GRADLE_HOME=$PWD/gradle-8.7" >> $GITHUB_ENV
+          echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
       - name: Run unit tests
-        run: gradle :app:testDebugUnitTest --stacktrace --no-build-cache
+        run: gradle :app:testDebugUnitTest --stacktrace --no-daemon
       - name: Publish test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -40,7 +42,7 @@ jobs:
             if [ -z "${!v}" ]; then echo "Missing secret: $v"; exit 1; fi
           done
           echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
-          gradle assembleRelease --stacktrace --no-build-cache
+          gradle assembleRelease --stacktrace --no-daemon
           SDK=$(ls $ANDROID_SDK_ROOT/build-tools | sort -V | tail -1)
           $ANDROID_SDK_ROOT/build-tools/$SDK/apksigner sign --ks release.keystore --ks-key-alias "$KEY_ALIAS" --ks-pass "pass:$KEYSTORE_PASSWORD" --key-pass "pass:$KEY_PASSWORD" --out app/build/outputs/apk/release/app-release-signed.apk app/build/outputs/apk/release/*.apk
           $ANDROID_SDK_ROOT/build-tools/$SDK/apksigner verify --verbose app/build/outputs/apk/release/app-release-signed.apk
