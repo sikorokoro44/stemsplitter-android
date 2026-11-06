@@ -3,6 +3,8 @@ package com.sikorokoro44.stemsplitter
 import com.sikorokoro44.stemsplitter.audio.AudioData
 import com.sikorokoro44.stemsplitter.audio.AudioSeparatorEngine
 import com.sikorokoro44.stemsplitter.audio.SeparationResult
+import kotlin.math.sin
+import kotlin.math.PI
 import org.junit.Assert.*
 import org.junit.Test
 
