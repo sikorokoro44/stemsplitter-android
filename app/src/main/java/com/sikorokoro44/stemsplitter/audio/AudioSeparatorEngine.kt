@@ -7,6 +7,7 @@ class AudioSeparatorEngine {
     private val hopSize = 512
 
     fun separate(audio: AudioData): SeparationResult {
+        if (audio.samples.isEmpty()) throw IllegalArgumentException("Empty audio input")
         val mono = toMono(audio)
         val stft = stft(mono)
 
@@ -77,14 +78,19 @@ class AudioSeparatorEngine {
 
     private fun stft(samples: FloatArray): Array<FloatArray> {
         val window = hannWindow(windowSize)
-        val numFrames = (samples.size - windowSize) / hopSize + 1
-        val result = Array(numFrames) { FloatArray(windowSize / 2 + 1) }
+        val padded = if (samples.size < windowSize) {
+            FloatArray(windowSize) { if (it < samples.size) samples[it] else 0.0f }
+        } else {
+            samples
+        }
+        val numFrames = (padded.size - windowSize) / hopSize + 1
+        val result = Array(maxOf(numFrames, 1)) { FloatArray(windowSize / 2 + 1) }
 
-        for (f in 0 until numFrames) {
+        for (f in 0 until result.size) {
             val start = f * hopSize
             val frame = FloatArray(windowSize)
             for (i in 0 until windowSize) {
-                frame[i] = samples[start + i] * window[i]
+                frame[i] = padded[start + i] * window[i]
             }
             val spectrum = rfft(frame)
             for (b in 0 until result[f].size) {
@@ -165,7 +171,7 @@ class AudioSeparatorEngine {
         val n = a.size
         var j = 0
         for (i in 1 until n) {
-            val bit = n shr 1
+            var bit = n shr 1
             while (j >= bit) {
                 j -= bit
                 bit = bit.shr(1)
