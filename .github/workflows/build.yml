@@ -23,8 +23,14 @@ jobs:
           unzip -q gradle.zip
           echo "GRADLE_HOME=$PWD/gradle-8.7" >> $GITHUB_ENV
           echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
-      - name: Run unit tests
-        run: gradle :app:testDebugUnitTest --stacktrace --no-daemon
+      - name: Run unit tests with verbose output
+        run: gradle :app:testDebugUnitTest --stacktrace --no-daemon --info 2>&1 | tee gradle-output.log
+      - name: Upload Gradle log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-log
+          path: gradle-output.log
       - name: Publish test results
         if: always()
         uses: actions/upload-artifact@v4
