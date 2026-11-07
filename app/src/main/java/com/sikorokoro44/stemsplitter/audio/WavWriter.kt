@@ -29,7 +29,7 @@ class WavWriter {
             raf.writeInt(dataSize)
 
             for (sample in audio.samples) {
-                val intSample = (sample * 32767.0f).coerceIn(-32768f, 32767f).toShort()
+                val intSample = (sample * 32767.0f).coerceIn(-32768f, 32767f).toInt().toShort()
                 raf.writeShort(intSample)
             }
         } finally {
